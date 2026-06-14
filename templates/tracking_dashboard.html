@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Tracking — {{ data.campaign.product_name }}{% endblock %}
+
+{% block content %}
+{% set c  = data.campaign %}
+{% set an = analytics %}
+{% set stage_colors = {
+  'Awareness':'#7c3aed','Interest':'#2563eb',
+  'Consideration':'#f59e0b','Conversion':'#ef4444','Retention':'#10b981'
+} %}
+
+<div class="page-hdr">
+  <div>
+    <div class="breadcrumb">
+      <a href="/campaigns">Campaigns</a> /
+      <a href="/campaigns/{{ campaign_id }}">{{ c.product_name }}</a> /
+      Real Tracking
+    </div>
+    <h1 class="page-title">Live <span class="g-text">Tracking Dashboard</span></h1>
+    <p class="page-sub">{{ c.persona }} · {{ c.behavior }} · All data from real clicks &amp; events</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    {% if an.get("is_real") %}
+    <div class="real-data-badge">
+      <span class="rdb-dot"></span> Real Data
+    </div>
+    {% endif %}
+    <a href="/execution/{{ campaign_id }}" class="btn-sm">← Workspace</a>
+    <a href="/campaigns/{{ campaign_id }}" class="btn-sm">Full Report</a>
+  </div>
+</div>
+
+{% if an.total_events == 0 %}
+<!-- ZERO STATE — no events yet -->
+<div class="zero-state glass-card">
+  <div class="zs-icon">📡</div>
+  <h2 class="zs-title">Tracking Active — Waiting for Events</h2>
+  <p class="zs-sub">
+    Your campaign is live. Share the trackable links below to start collecting
+    real click data. Every click will appear here instantly.
+  </p>
+  <div class="zs-steps">
+    <div class="zs-step"><span class="zss-num">1</span>Copy a trackable link below</div>
+    <div class="zs-step"><span class="zss-num">2</span>Share it on the channel it's made for</div>
+    <div class="zs-step"><span class="zss-num">3</span>Refresh this page to see real clicks</div>
+  </div>
+  <button class="btn-neon" onclick="location.reload()" style="margin-top:24px">
+    🔄 Refresh Dashboard
+  </button>
+</div>
+{% else %}
+<!-- REAL METRICS -->
+<div class="metric-row" style="margin-bottom:28px">
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.total_clicks }}</div>
+    <div class="mc-lbl">Real Clicks</div>
+    <div class="mc-source">from tracking links</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.total_views }}</div>
+    <div class="mc-lbl">Page Views</div>
+    <div class="mc-source">from beacon</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.total_opens }}</div>
+    <div class="mc-lbl">Email Opens</div>
+    <div class="mc-source">from pixel</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.unique_visitors }}</div>
+    <div class="mc-lbl">Unique Visitors</div>
+    <div class="mc-source">by IP hash</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.engagement }}%</div>
+    <div class="mc-lbl">Engagement Rate</div>
+    <div class="mc-source">clicks ÷ views</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val real-num">{{ an.conversion_score }}</div>
+    <div class="mc-lbl">Conv. Score</div>
+    <div class="mc-source">stage-weighted</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="glass-card" style="margin-bottom:24px;padding:20px 24px">
+  <div class="prog-header">
+    <span>Funnel Progress — stages with activity</span>
+    <span class="prog-pct">{{ an.progress }}%</span>
+  </div>
+  <div class="prog-track" style="margin-top:10px">
+    <div class="prog-bar" style="width:{{ an.progress }}%"></div>
+  </div>
+</div>
+
+<!-- Stage Breakdown -->
+<div class="glass-card" style="margin-bottom:24px">
+  <div class="section-eyebrow">Stage Breakdown — Real Events</div>
+  <div class="stage-breakdown-grid">
+    {% for stage in ['Awareness','Interest','Consideration','Conversion','Retention'] %}
+    {% set sb = an.stage_breakdown.get(stage, {}) %}
+    {% set color = stage_colors.get(stage, '#7c3aed') %}
+    <div class="sbg-card" style="border-top:3px solid {{ color }}">
+      <div class="sbg-stage" style="color:{{ color }}">{{ stage }}</div>
+      <div class="sbg-stats">
+        <div class="sbg-stat"><div class="sbg-val">{{ sb.get('clicks',0) }}</div><div class="sbg-lbl">Clicks</div></div>
+        <div class="sbg-stat"><div class="sbg-val">{{ sb.get('views',0)  }}</div><div class="sbg-lbl">Views</div></div>
+        <div class="sbg-stat"><div class="sbg-val">{{ sb.get('opens',0)  }}</div><div class="sbg-lbl">Opens</div></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Tactic Table (only show links with clicks) -->
+{% if an.tactic_data %}
+<div class="glass-card" style="margin-bottom:24px">
+  <div class="section-eyebrow">Channel Performance — Real Clicks</div>
+  <div class="table-scroll">
+    <table class="tactic-table">
+      <thead><tr><th>Channel</th><th>Stage</th><th>Clicks</th><th>Score</th><th>Trend</th></tr></thead>
+      <tbody>
+        {% for t in an.tactic_data %}
+        {% if t.clicks > 0 %}
+        {% set sc = t.score %}
+        <tr>
+          <td style="font-weight:600">{{ t.tactic }}</td>
+          <td><span style="color:{{ stage_colors.get(t.stage,'#7c3aed') }};font-size:.8rem;font-weight:700">{{ t.stage }}</span></td>
+          <td style="font-weight:800;color:var(--purple-l)">{{ t.clicks }}</td>
+          <td>
+            <div class="score-bar-wrap">
+              <div class="score-bar" style="width:{{ sc }}%;background:{{ '#10b981' if sc>=75 else '#f59e0b' if sc>=40 else '#ef4444' }};max-width:80px"></div>
+              <span class="score-num">{{ sc }}%</span>
+            </div>
+          </td>
+          <td class="trend-{{ 'up' if t.trend=='↑' else 'down' if t.trend=='↓' else 'flat' }}">{{ t.trend }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- ══ TRACKABLE LINKS — The core of real tracking ══ -->
+<div class="glass-card" style="margin-bottom:24px">
+  <div class="section-eyebrow">Your Trackable Links</div>
+  <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:6px">
+    Share these links — every click is tracked in real time
+  </h3>
+  <p style="font-size:.85rem;color:var(--muted2);margin-bottom:20px">
+    Replace any URL in your content with these links. Works on Instagram bio,
+    LinkedIn posts, email campaigns, WhatsApp broadcasts — anywhere.
+  </p>
+
+  <!-- Filter tabs by stage -->
+  <div class="link-stage-tabs" id="link-tabs">
+    <button class="lst-btn active" onclick="filterLinks('all',this)">All</button>
+    {% for stage in ['Awareness','Interest','Consideration','Conversion','Retention'] %}
+    <button class="lst-btn" onclick="filterLinks('{{ stage }}',this)">{{ stage }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="links-grid" id="links-grid">
+    {% for link in links %}
+    <div class="link-card" data-stage="{{ link.stage }}">
+      <div class="lc-header">
+        <span class="lc-stage" style="color:{{ stage_colors.get(link.stage,'#7c3aed') }}">
+          {{ link.stage }}
+        </span>
+        <span class="lc-channel">{{ link.channel.replace('_',' ').title() }}</span>
+        <span class="lc-clicks {% if link.clicks > 0 %}lc-has-clicks{% endif %}">
+          {{ link.clicks }} click{{ 's' if link.clicks != 1 else '' }}
+        </span>
+      </div>
+      <div class="lc-url" id="url-{{ link.token }}">
+        {{ request.host_url }}t/{{ link.token }}
+      </div>
+      <div class="lc-actions">
+        <button class="csc-copy" onclick="copyLink('{{ link.token }}', this)">⎘ Copy Link</button>
+        {% if link.channel == 'email' %}
+        <button class="csc-copy" onclick="copyPixel('{{ link.token }}', this)">📧 Copy Email Pixel</button>
+        {% endif %}
+        <a href="/t/{{ link.token }}" target="_blank" class="csc-copy">↗ Test</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- HOW IT WORKS explainer -->
+<div class="glass-card how-it-works">
+  <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:16px">
+    📖 How Real Tracking Works
+  </h3>
+  <div class="hiw-grid">
+    <div class="hiw-item">
+      <div class="hiw-icon">🔗</div>
+      <div class="hiw-title">Trackable Links</div>
+      <div class="hiw-desc">Every link (<code>/t/token</code>) logs a real click with timestamp, channel, funnel stage, and hashed IP for privacy.</div>
+    </div>
+    <div class="hiw-item">
+      <div class="hiw-icon">📧</div>
+      <div class="hiw-title">Email Pixel</div>
+      <div class="hiw-desc">Embed a 1×1 invisible GIF (<code>/pixel/token.gif</code>) in emails. Every open is tracked — just like Mailchimp does it.</div>
+    </div>
+    <div class="hiw-item">
+      <div class="hiw-icon">📡</div>
+      <div class="hiw-title">Page Beacon</div>
+      <div class="hiw-desc">A JS beacon auto-fires when visitors land on your campaign pages, logging real page view events.</div>
+    </div>
+    <div class="hiw-item">
+      <div class="hiw-icon">📊</div>
+      <div class="hiw-title">Real Analytics</div>
+      <div class="hiw-desc">Every metric shown here is computed from actual database rows — no estimates, no randomness.</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const BASE_URL = "{{ request.host_url }}";
+const CAMPAIGN_ID = {{ campaign_id }};
+
+function copyLink(token, btn) {
+  const url = BASE_URL + "t/" + token;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = "✓ Copied!";
+    btn.style.color = "#10b981";
+    setTimeout(() => { btn.textContent = "⎘ Copy Link"; btn.style.color = ""; }, 2000);
+  });
+}
+
+function copyPixel(token, btn) {
+  const tag = `<img src="${BASE_URL}pixel/${token}.gif" width="1" height="1" style="display:none" alt="">`;
+  navigator.clipboard.writeText(tag).then(() => {
+    btn.textContent = "✓ Copied HTML!";
+    btn.style.color = "#10b981";
+    setTimeout(() => { btn.textContent = "📧 Copy Email Pixel"; btn.style.color = ""; }, 2000);
+  });
+}
+
+function filterLinks(stage, btn) {
+  document.querySelectorAll(".lst-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".link-card").forEach(card => {
+    card.style.display =
+      (stage === "all" || card.dataset.stage === stage) ? "block" : "none";
+  });
+}
+
+// Auto-refresh every 30 seconds if there are events
+{% if an.total_events > 0 %}
+setTimeout(() => location.reload(), 30000);
+{% endif %}
+</script>
+{% endblock %}

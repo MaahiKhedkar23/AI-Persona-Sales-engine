@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SalesAI Platform{% endblock %}
+
+{% block content %}
+
+<!-- WORKFLOW PROGRESS BAR -->
+<div class="workflow-bar">
+  <div class="wb-step wb-active" id="wb-1">
+    <div class="wbs-num">1</div><div class="wbs-label">Setup</div>
+  </div>
+  <div class="wb-connector" id="wbc-1"></div>
+  <div class="wb-step" id="wb-2">
+    <div class="wbs-num">2</div><div class="wbs-label">Strategy</div>
+  </div>
+  <div class="wb-connector" id="wbc-2"></div>
+  <div class="wb-step" id="wb-3">
+    <div class="wbs-num">3</div><div class="wbs-label">Execute</div>
+  </div>
+  <div class="wb-connector" id="wbc-3"></div>
+  <div class="wb-step" id="wb-4">
+    <div class="wbs-num">4</div><div class="wbs-label">Optimize</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PHASE 1: CAMPAIGN SETUP
+════════════════════════════════════════════ -->
+<div id="phase-setup">
+  <div class="dash-header">
+    <h1 class="dash-title">Campaign <span class="g-text">Setup</span></h1>
+    <p class="dash-sub">Define your product and 3-level persona. The AI builds the full strategy.</p>
+  </div>
+
+  <div class="setup-layout">
+
+    <!-- FORM PANEL -->
+    <div class="setup-form glass-card">
+
+      <div class="inp-group">
+        <label class="inp-label">📦 Product / Service Name</label>
+        <input type="text" id="inp-product" class="inp-field"
+               placeholder="e.g. Python Bootcamp, Fitness App…" autocomplete="off"/>
+      </div>
+
+      <!-- L1: Category -->
+      <div class="inp-group">
+        <div class="level-hdr">
+          <span class="lvl-badge">L1</span>
+          <span class="lvl-title">Customer Category</span>
+        </div>
+        <div class="cat-picker" id="cat-cards">
+          {% for k, v in hierarchy.items() %}
+          <div class="cpc" data-cat="{{ k }}" onclick="pickCategory('{{ k }}')">
+            <span class="cpc-icon">{{ v.icon }}</span>
+            <div class="cpc-body">
+              <div class="cpc-key">{{ k }}</div>
+              <div class="cpc-desc">{{ v.description }}</div>
+            </div>
+            <span class="cpc-tick">✓</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- L2: Persona Cards (injected by JS) -->
+      <div class="inp-group fade-reveal" id="l2-group" style="display:none">
+        <div class="level-hdr">
+          <span class="lvl-badge l2">L2</span>
+          <span class="lvl-title">Persona</span>
+        </div>
+        <div class="persona-picker" id="persona-picker"></div>
+        <div class="inp-hint" id="persona-hint"></div>
+      </div>
+
+      <!-- L3: Behavior Grid (injected by JS) -->
+      <div class="inp-group fade-reveal" id="l3-group" style="display:none">
+        <div class="level-hdr">
+          <span class="lvl-badge l3">L3</span>
+          <span class="lvl-title">Behavior Type</span>
+        </div>
+        <div class="behavior-grid" id="behavior-grid"></div>
+        <div class="inp-hint" id="beh-hint"></div>
+      </div>
+
+      <!-- Profile pill -->
+      <div class="profile-pill" id="profile-pill" style="display:none">
+        <span class="pp-dot"></span>
+        <span id="pp-value"></span>
+      </div>
+
+      <button class="btn-generate" id="gen-btn" onclick="startGenerate()" disabled>
+        <span id="gen-txt">⚡ Generate AI Strategy</span>
+        <span class="gen-spinner hidden" id="gen-spin"></span>
+      </button>
+    </div>
+
+    <!-- ENGINE PANEL -->
+    <div class="setup-engine glass-card" id="engine-panel">
+
+      <!-- IDLE -->
+      <div id="state-idle" class="engine-state">
+        <div class="engine-rings">
+          <div class="e-ring r1"></div>
+          <div class="e-ring r2"></div>
+          <div class="e-ring r3"></div>
+          <div class="e-core">AI</div>
+        </div>
+        <p class="engine-idle-msg">Configure your profile<br>to activate the AI engine</p>
+        <div class="idle-hints">
+          <div class="ih"><span>🧠</span>3-level persona targeting</div>
+          <div class="ih"><span>🗺️</span>5-stage funnel strategy</div>
+          <div class="ih"><span>✍️</span>Full content generation</div>
+          <div class="ih"><span>🛠️</span>Implementation guides</div>
+        </div>
+      </div>
+
+      <!-- THINKING -->
+      <div id="state-think" class="engine-state hidden">
+        <div class="think-header">
+          <div class="think-pulse"></div>
+          <span class="think-label">AI Strategy Engine Running</span>
+        </div>
+        <div class="think-steps">
+          <div class="ts" data-i="0"><div class="ts-icon">🔍</div><div class="ts-body"><div class="ts-lbl">Analyzing persona profile</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+          <div class="ts" data-i="1"><div class="ts-icon">🧠</div><div class="ts-body"><div class="ts-lbl">Mapping behavior psychology</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+          <div class="ts" data-i="2"><div class="ts-icon">🗺️</div><div class="ts-body"><div class="ts-lbl">Building funnel strategy</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+          <div class="ts" data-i="3"><div class="ts-icon">✍️</div><div class="ts-body"><div class="ts-lbl">Generating sales content</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+          <div class="ts" data-i="4"><div class="ts-icon">🛠️</div><div class="ts-body"><div class="ts-lbl">Building implementation guide</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+          <div class="ts" data-i="5"><div class="ts-icon">✅</div><div class="ts-body"><div class="ts-lbl">Strategy complete</div><div class="ts-bar"><div class="ts-fill"></div></div></div></div>
+        </div>
+      </div>
+
+      <!-- DONE -->
+      <div id="state-done" class="engine-state hidden">
+        <div class="done-ring"><div class="done-check">✓</div></div>
+        <div class="done-title">Strategy Ready</div>
+        <div class="done-sub" id="done-sub"></div>
+        <button class="done-view-btn" onclick="scrollToStrategy()">
+          View Strategy Intelligence ↓
+        </button>
+      </div>
+
+      <!-- ERROR -->
+      <div id="state-err" class="engine-state hidden">
+        <div class="err-icon">⚠️</div>
+        <div class="err-msg" id="err-msg">Something went wrong.</div>
+        <button class="btn-retry" onclick="resetEngine()">Try Again</button>
+      </div>
+    </div>
+
+  </div><!-- /setup-layout -->
+</div><!-- /phase-setup -->
+
+
+<!-- ════════════════════════════════════════════
+     PHASE 2: STRATEGY INTELLIGENCE
+════════════════════════════════════════════ -->
+<div id="phase-strategy" class="hidden">
+
+  <div class="phase-divider">
+    <div class="pd-line"></div>
+    <div class="pd-label">Phase 2 — Strategy Intelligence</div>
+    <div class="pd-line"></div>
+  </div>
+
+  <!-- AI Reasoning bubble -->
+  <div class="ai-reasoning-card glass-card" id="ai-reasoning-card">
+    <div class="arc-avatar">AI</div>
+    <div class="arc-body">
+      <div class="arc-eyebrow">AI Persona Reasoning</div>
+      <div class="arc-text" id="arc-text"></div>
+      <div class="arc-profile" id="arc-profile"></div>
+    </div>
+  </div>
+
+  <!-- Strategy Summary Strip -->
+  <div class="strat-summary">
+    <div class="ss-item glass-card">
+      <div class="ssi-icon">📦</div>
+      <div class="ssi-label">Product</div>
+      <div class="ssi-val" id="ss-product">—</div>
+    </div>
+    <div class="ss-item glass-card">
+      <div class="ssi-icon">🎯</div>
+      <div class="ssi-label">Category</div>
+      <div class="ssi-val" id="ss-category">—</div>
+    </div>
+    <div class="ss-item glass-card">
+      <div class="ssi-icon">👤</div>
+      <div class="ssi-label">Persona</div>
+      <div class="ssi-val" id="ss-persona">—</div>
+    </div>
+    <div class="ss-item glass-card">
+      <div class="ssi-icon">🧠</div>
+      <div class="ssi-label">Behavior</div>
+      <div class="ssi-val" id="ss-behavior">—</div>
+    </div>
+  </div>
+
+  <!-- ── INTERACTIVE FUNNEL ─────────────────────────────── -->
+  <div class="strategy-block">
+    <div class="sb-eyebrow">Core Strategy</div>
+    <h3 class="sb-title">Interactive Sales Funnel</h3>
+    <p class="sb-sub">Click any stage to expand objectives, tactics, implementation steps, and generated content.</p>
+    <div class="funnel-flow" id="funnel-flow"></div>
+    <div class="stage-intel-panel glass-card hidden" id="stage-intel-panel"></div>
+  </div>
+
+  <!-- ── QUICK WINS + AVOID ─────────────────────────────── -->
+  <div class="dual-cards">
+    <div class="glass-card dual-card" id="quickwins-card">
+      <h3 class="dc-title">⚡ Quick Wins</h3>
+      <div id="quickwins-body"></div>
+    </div>
+    <div class="glass-card dual-card" id="avoid-card">
+      <h3 class="dc-title">🚫 Common Mistakes to Avoid</h3>
+      <div id="avoid-body"></div>
+    </div>
+  </div>
+
+  <!-- ── EXECUTION READINESS CTA ────────────────────────── -->
+  <div class="exec-ready-card glass-card">
+    <div class="erc-left">
+      <div class="erc-icon-big">🚀</div>
+      <div>
+        <h3 class="erc-title">Ready for Execution</h3>
+        <p class="erc-sub">Strategy is complete. Launch the workspace to begin implementation.</p>
+      </div>
+    </div>
+    <div class="erc-checks">
+      <div class="erc-ck"><span class="eck-dot"></span>Funnel generated</div>
+      <div class="erc-ck"><span class="eck-dot"></span>Content ready</div>
+      <div class="erc-ck"><span class="eck-dot"></span>Channels identified</div>
+      <div class="erc-ck"><span class="eck-dot"></span>Implementation guide prepared</div>
+    </div>
+    <div class="erc-actions">
+      <button class="act-btn" onclick="copyAll()">⎘ Copy</button>
+      <button class="act-btn" onclick="downloadTxt()">↓ .txt</button>
+      <a id="launch-btn" href="#" class="btn-launch">🚀 Launch Execution Workspace</a>
+    </div>
+  </div>
+
+</div><!-- /phase-strategy -->
+
+<textarea id="strategy-store" class="visually-hidden"></textarea>
+{% endblock %}
+
+{% block extra_js %}
+<script>const HIERARCHY = {{ hierarchy | tojson }};</script>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

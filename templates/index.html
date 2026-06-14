@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Strategy AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span>SalesAI</span>
+    </div>
+    <p class="tagline">Persona-driven strategy & content, generated in seconds.</p>
+  </header>
+
+  <!-- ── MAIN CONTENT ───────────────────────────────────── -->
+  <main>
+
+    <!-- INPUT CARD -->
+    <section class="card input-card">
+      <h2 class="card-title">Generate Your Strategy</h2>
+
+      <div class="form-group">
+        <label for="product">Product / Service Name</label>
+        <input
+          type="text"
+          id="product"
+          placeholder="e.g. Online Python Bootcamp, CRM Software, Fitness App…"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="persona">Target Persona</label>
+        <div class="select-wrapper">
+          <select id="persona">
+            <option value="">— Choose a persona —</option>
+            <option value="Student">🎓 Student</option>
+            <option value="B2C Customer">🛍️ B2C Customer</option>
+            <option value="B2B Business">🏢 B2B Business</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <button id="generate-btn" class="btn-primary" onclick="generateStrategy()">
+        <span id="btn-text">Generate Strategy</span>
+        <span id="btn-spinner" class="spinner hidden"></span>
+      </button>
+    </section>
+
+    <!-- ERROR BANNER -->
+    <div id="error-banner" class="error-banner hidden"></div>
+
+    <!-- OUTPUT SECTION -->
+    <section id="output-section" class="hidden">
+
+      <!-- SUMMARY BAR -->
+      <div class="summary-bar">
+        <div class="summary-item">
+          <span class="summary-label">Product</span>
+          <span class="summary-value" id="out-product">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="summary-item">
+          <span class="summary-label">Persona</span>
+          <span class="summary-value" id="out-persona">—</span>
+        </div>
+      </div>
+
+      <!-- FUNNEL FLOWCHART (text-based) -->
+      <div class="flowchart-section">
+        <h3 class="section-heading">Sales Funnel Overview</h3>
+        <div class="flowchart" id="flowchart"></div>
+      </div>
+
+      <!-- FUNNEL STAGES -->
+      <h3 class="section-heading">Detailed Strategy & Content</h3>
+      <div id="funnel-stages"></div>
+
+      <!-- QUICK TIPS -->
+      <div class="card tips-card" id="tips-section">
+        <h3 class="tips-title">💡 Quick Tips for This Persona</h3>
+        <ul id="tips-list" class="tips-list"></ul>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <footer>
+    <p>Built with Flask &amp; Claude AI · <span id="year"></span></p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Generate Strategy — SalesAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Generate Strategy</h1>
+  <p class="page-sub">Fill in the details below and get a full persona-based sales funnel.</p>
+</div>
+
+<!-- MODE TOGGLE -->
+<div class="mode-toggle">
+  <button class="mode-btn active" id="btn-single"  onclick="setMode('single')">Single Persona</button>
+  <button class="mode-btn"        id="btn-compare" onclick="setMode('compare')">⚡ Compare 2 Personas</button>
+</div>
+
+<!-- ══ SINGLE MODE ════════════════════════════════════════ -->
+<div id="single-mode">
+  <div class="card input-card">
+    <div class="form-group">
+      <label for="product">Product / Service Name</label>
+      <input type="text" id="product" placeholder="e.g. Python Bootcamp, Fitness App, CRM Software…"
+             value="{{ prefill_product }}" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label for="persona">Target Persona</label>
+      <div class="select-wrapper">
+        <select id="persona">
+          <option value="">— Choose a persona —</option>
+          <option value="Student"      {% if prefill_persona == 'Student' %}selected{% endif %}>🎓 Student</option>
+          <option value="B2C Customer" {% if prefill_persona == 'B2C Customer' %}selected{% endif %}>🛍️ B2C Customer</option>
+          <option value="B2B Business" {% if prefill_persona == 'B2B Business' %}selected{% endif %}>🏢 B2B Business</option>
+        </select>
+        <span class="select-arrow">▾</span>
+      </div>
+    </div>
+    <button class="btn-primary full-width" onclick="generateSingle()">
+      <span id="btn-text">⚡ Generate Strategy</span>
+      <span id="btn-spinner" class="spinner hidden"></span>
+    </button>
+  </div>
+
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <!-- OUTPUT -->
+  <div id="output-section" class="hidden">
+    <div class="result-header">
+      <div class="summary-bar">
+        <div class="summary-item">
+          <span class="summary-label">Product</span>
+          <span class="summary-value" id="out-product">—</span>
+        </div>
+        <div class="vdivider"></div>
+        <div class="summary-item">
+          <span class="summary-label">Persona</span>
+          <span class="summary-value" id="out-persona">—</span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-outline-sm" onclick="copyFullStrategy()">⎘ Copy Full Strategy</button>
+        <button class="btn-outline-sm" onclick="downloadStrategy()">↓ Download .txt</button>
+      </div>
+    </div>
+
+    <!-- FUNNEL FLOWCHART -->
+    <div class="funnel-section">
+      <h3 class="section-label">Sales Funnel Overview</h3>
+      <div class="funnel-flow" id="funnel-flow"></div>
+    </div>
+
+    <!-- STAGE CARDS -->
+    <h3 class="section-label">Detailed Strategy & Content</h3>
+    <div id="funnel-stages"></div>
+
+    <!-- TIPS -->
+    <div class="card tips-card" id="tips-card">
+      <h3 class="tips-title">💡 Quick Tips for This Persona</h3>
+      <ul id="tips-list" class="tips-list"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMPARE MODE ═══════════════════════════════════════ -->
+<div id="compare-mode" class="hidden">
+  <div class="compare-inputs">
+    <div class="card input-card">
+      <h3 class="card-label">Persona A</h3>
+      <div class="form-group">
+        <label>Product / Service Name</label>
+        <input type="text" id="cmp-product" placeholder="e.g. Python Bootcamp" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>Persona A</label>
+        <div class="select-wrapper">
+          <select id="cmp-persona-a">
+            <option value="">— Choose —</option>
+            <option value="Student">🎓 Student</option>
+            <option value="B2C Customer">🛍️ B2C Customer</option>
+            <option value="B2B Business">🏢 B2B Business</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Persona B</label>
+        <div class="select-wrapper">
+          <select id="cmp-persona-b">
+            <option value="">— Choose —</option>
+            <option value="Student">🎓 Student</option>
+            <option value="B2C Customer">🛍️ B2C Customer</option>
+            <option value="B2B Business">🏢 B2B Business</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+      <button class="btn-primary full-width" onclick="generateCompare()">
+        <span id="cmp-btn-text">⚡ Compare Personas</span>
+        <span id="cmp-spinner" class="spinner hidden"></span>
+      </button>
+    </div>
+  </div>
+  <div id="cmp-error" class="error-banner hidden"></div>
+  <div id="compare-output" class="hidden">
+    <div class="compare-columns" id="compare-columns"></div>
+  </div>
+</div>
+
+<!-- Hidden storage for copy/download -->
+<textarea id="strategy-text-store" class="hidden"></textarea>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/generate.js"></script>
+{% endblock %}

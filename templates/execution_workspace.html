@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+{% block title %}Execution Workspace — {{ data.campaign.product_name }}{% endblock %}
+
+{% block content %}
+{% set c   = data.campaign %}
+{% set an  = data.analytics %}
+{% set stage_colors = {
+  'Awareness':'#7c3aed','Interest':'#2563eb',
+  'Consideration':'#f59e0b','Conversion':'#ef4444','Retention':'#10b981'
+} %}
+
+<!-- PAGE HEADER -->
+<div class="page-hdr">
+  <div>
+    <div class="breadcrumb">
+      <a href="/campaigns">Campaigns</a> /
+      <a href="/campaigns/{{ campaign_id }}">{{ c.product_name }}</a> /
+      Execution Workspace
+    </div>
+    <h1 class="page-title">Execution <span class="g-text">Workspace</span></h1>
+    <p class="page-sub">{{ c.persona }} · {{ c.behavior }} · {{ c.category }}</p>
+  </div>
+  <!-- Execution Status Badge -->
+  <div class="exec-status-badge" id="exec-status-badge">
+    <span class="esb-dot" id="esb-dot"></span>
+    <span id="esb-label">{{ c.execution_status | capitalize }}</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION A — EXECUTION TIMELINE
+════════════════════════════════════════════════════════ -->
+<div class="ws-section">
+  <div class="section-eyebrow">Execution Timeline</div>
+  <h2 class="ws-section-title">Campaign Rollout Plan</h2>
+
+  <div class="exec-timeline">
+    {% set timeline = [
+      {"day":"Day 1",  "title":"Awareness Launch",    "desc":"Deploy top-of-funnel content across primary channels",            "stage":"Awareness",     "icon":"🚀"},
+      {"day":"Day 3",  "title":"Engagement Push",     "desc":"Amplify reach — respond to comments, share user content",          "stage":"Interest",      "icon":"📣"},
+      {"day":"Day 5",  "title":"Consideration Drive",  "desc":"Publish comparison content, case studies, and testimonials",      "stage":"Consideration", "icon":"🔍"},
+      {"day":"Day 7",  "title":"Conversion Sprint",    "desc":"Launch limited-time offer and direct sales outreach",              "stage":"Conversion",    "icon":"💰"},
+      {"day":"Day 10", "title":"Retention Activation", "desc":"Onboard converted leads and begin loyalty programme",              "stage":"Retention",     "icon":"🔄"},
+    ] %}
+
+    <div class="timeline-track">
+      <div class="timeline-line" id="timeline-line"></div>
+      {% for item in timeline %}
+      <div class="tl-node" data-i="{{ loop.index0 }}">
+        <div class="tln-milestone" style="border-color:{{ stage_colors.get(item.stage,'#7c3aed') }}">
+          <span class="tln-icon">{{ item.icon }}</span>
+        </div>
+        <div class="tln-label">{{ item.day }}</div>
+        <div class="tln-card glass-card">
+          <div class="tlnc-stage" style="color:{{ stage_colors.get(item.stage,'#7c3aed') }}">{{ item.stage }}</div>
+          <div class="tlnc-title">{{ item.title }}</div>
+          <div class="tlnc-desc">{{ item.desc }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN WORKSPACE GRID (Checklist + Platform Cards)
+════════════════════════════════════════════════════════ -->
+<div class="ws-grid">
+
+  <!-- ── SECTION B: IMPLEMENTATION CHECKLIST ──────────── -->
+  <div class="ws-col ws-col-left">
+    <div class="glass-card ws-card">
+      <div class="wsc-header">
+        <span class="wsc-icon">✅</span>
+        <h3 class="wsc-title">Implementation Checklist</h3>
+        <div class="checklist-progress">
+          <span id="ck-pct">0%</span>
+        </div>
+      </div>
+
+      <div class="ck-progress-bar">
+        <div class="ck-bar-fill" id="ck-bar-fill" style="width:0%"></div>
+      </div>
+
+      <div class="checklist" id="checklist">
+        <!-- Generated from funnel tactics -->
+        {% for stage in data.funnel %}
+          {% for tac in stage.tactics[:1] %}
+          <label class="ck-item">
+            <input type="checkbox" class="ck-box" onchange="updateChecklist()"/>
+            <span class="ck-check"></span>
+            <div class="ck-body">
+              <div class="ck-task">{{ tac.name if tac is mapping else tac }}</div>
+              <div class="ck-stage" style="color:{{ stage_colors.get(stage.stage,'#7c3aed') }}">{{ stage.stage }}</div>
+            </div>
+          </label>
+          {% endfor %}
+        {% endfor %}
+        <!-- Extra default tasks -->
+        <label class="ck-item">
+          <input type="checkbox" class="ck-box" onchange="updateChecklist()"/>
+          <span class="ck-check"></span>
+          <div class="ck-body">
+            <div class="ck-task">Prepare email sequences</div>
+            <div class="ck-stage" style="color:#f59e0b">Consideration</div>
+          </div>
+        </label>
+        <label class="ck-item">
+          <input type="checkbox" class="ck-box" onchange="updateChecklist()"/>
+          <span class="ck-check"></span>
+          <div class="ck-body">
+            <div class="ck-task">Finalize CTA copy and landing page</div>
+            <div class="ck-stage" style="color:#ef4444">Conversion</div>
+          </div>
+        </label>
+        <label class="ck-item">
+          <input type="checkbox" class="ck-box" onchange="updateChecklist()"/>
+          <span class="ck-check"></span>
+          <div class="ck-body">
+            <div class="ck-task">Schedule all content in advance</div>
+            <div class="ck-stage" style="color:#7c3aed">All Stages</div>
+          </div>
+        </label>
+        <label class="ck-item">
+          <input type="checkbox" class="ck-box" onchange="updateChecklist()"/>
+          <span class="ck-check"></span>
+          <div class="ck-body">
+            <div class="ck-task">Set up tracking pixels and UTM links</div>
+            <div class="ck-stage" style="color:#10b981">Analytics</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION D: PLATFORM EXECUTION CARDS ──────────── -->
+  <div class="ws-col ws-col-right">
+    <div class="glass-card ws-card">
+      <div class="wsc-header">
+        <span class="wsc-icon">📡</span>
+        <h3 class="wsc-title">Platform Execution</h3>
+      </div>
+
+      {% set platforms = [
+        {"name":"Instagram","icon":"📸","freq":"3-5x / week","timing":"6PM–9PM","fit":"High","status":"Ready","color":"#e1306c"},
+        {"name":"LinkedIn", "icon":"💼","freq":"1-2x / week","timing":"8AM–10AM","fit":"Medium","status":"Ready","color":"#0077b5"},
+        {"name":"Email",    "icon":"📧","freq":"2x / week",  "timing":"Tue & Thu 10AM","fit":"High","status":"Draft","color":"#f59e0b"},
+        {"name":"YouTube",  "icon":"▶️","freq":"1x / week",  "timing":"Fri 5PM","fit":"Medium","status":"Planned","color":"#ff0000"},
+        {"name":"WhatsApp", "icon":"💬","freq":"1x / week",  "timing":"Weekend 10AM","fit":"Low","status":"Optional","color":"#25d366"},
+      ] %}
+
+      <div class="platform-cards">
+        {% for p in platforms %}
+        <div class="plat-card">
+          <div class="pc-left">
+            <span class="pc-icon">{{ p.icon }}</span>
+            <div>
+              <div class="pc-name">{{ p.name }}</div>
+              <div class="pc-timing">⏰ {{ p.timing }}</div>
+            </div>
+          </div>
+          <div class="pc-right">
+            <div class="pc-freq">{{ p.freq }}</div>
+            <span class="pc-fit fit-{{ p.fit|lower }}">{{ p.fit }} Fit</span>
+            <span class="pc-status st-{{ p.status|lower }}">{{ p.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div><!-- /ws-grid -->
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION C — CONTENT STUDIO
+════════════════════════════════════════════════════════ -->
+<div class="ws-section">
+  <div class="section-eyebrow">Content Studio</div>
+  <h2 class="ws-section-title">Generated Content — Ready to Use</h2>
+
+  <div class="content-studio-grid">
+    {% for stage in data.funnel %}
+    {% set c_data = stage.content %}
+    {% set color  = stage_colors.get(stage.stage, '#7c3aed') %}
+
+    <!-- Sales Message Card -->
+    {% if c_data.sales_message %}
+    <div class="cs-card glass-card">
+      <div class="csc-header">
+        <span class="csc-platform-tag" style="background:{{ color }}22;color:{{ color }};border-color:{{ color }}44">
+          {{ stage.stage }}
+        </span>
+        <span class="csc-type">Sales Message</span>
+      </div>
+      <div class="csc-content" id="csc-{{ loop.index }}-msg">{{ c_data.sales_message }}</div>
+      <div class="csc-actions">
+        <button class="csc-copy" onclick="copyCard('csc-{{ loop.index }}-msg', this)">⎘ Copy</button>
+        <button class="csc-expand" onclick="expandCard(this)">↕ Expand</button>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Hook Card -->
+    {% if c_data.hook %}
+    <div class="cs-card glass-card">
+      <div class="csc-header">
+        <span class="csc-platform-tag" style="background:{{ color }}22;color:{{ color }};border-color:{{ color }}44">
+          {{ stage.stage }}
+        </span>
+        <span class="csc-type">Hook Line</span>
+      </div>
+      <div class="csc-content hook-text" id="csc-{{ loop.index }}-hook">{{ c_data.hook }}</div>
+      <div class="csc-actions">
+        <button class="csc-copy" onclick="copyCard('csc-{{ loop.index }}-hook', this)">⎘ Copy</button>
+        <button class="csc-expand" onclick="expandCard(this)">↕ Expand</button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     LAUNCH + TRACKING SECTION
+════════════════════════════════════════════════════════ -->
+<div class="launch-section glass-card" id="launch-section">
+
+  <!-- PRE-LAUNCH STATE -->
+  <div id="pre-launch">
+    <div class="ls-icon">🚀</div>
+    <h2 class="ls-title">Ready to Launch?</h2>
+    <p class="ls-sub">
+      Complete the checklist above, review your content, then launch your campaign.<br>
+      <strong>Tracking will only begin after you start execution.</strong>
+    </p>
+    <div class="tracking-note" style="margin:20px 0">
+      <span class="tn-icon">📊</span>
+      <span>Analytics dashboard is locked until campaign goes live. No fake data shown.</span>
+    </div>
+    <button class="btn-launch" style="margin:0 auto;display:flex" onclick="launchCampaign()">
+      🚀 Launch Campaign & Start Tracking
+    </button>
+  </div>
+
+  <!-- TRACKING INIT STATE (shown after click) -->
+  <div id="tracking-init" class="hidden">
+    <div class="ti-header">
+      <div class="think-pulse"></div>
+      <span class="think-label">Initializing Analytics Engine</span>
+    </div>
+    <div class="ti-steps">
+      <div class="ti-step" data-i="0"><span class="ti-step-icon">⚙️</span> Initializing analytics pipeline…</div>
+      <div class="ti-step" data-i="1"><span class="ti-step-icon">👁️</span> Monitoring engagement signals…</div>
+      <div class="ti-step" data-i="2"><span class="ti-step-icon">📡</span> Collecting interaction data…</div>
+      <div class="ti-step" data-i="3"><span class="ti-step-icon">🧠</span> Generating optimization insights…</div>
+      <div class="ti-step" data-i="4"><span class="ti-step-icon">✅</span> Analytics live!</div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS REVEAL (after tracking init) -->
+  <div id="analytics-reveal" class="hidden">
+    <div class="section-eyebrow" style="margin-bottom:20px">Campaign Analytics — Live</div>
+    <div class="metric-row" id="live-metrics"></div>
+
+    <div class="progress-section" style="margin:20px 0">
+      <div class="prog-header">
+        <span>Campaign Progress</span>
+        <span class="prog-pct" id="live-prog-pct">0%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-bar" id="live-prog-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="margin-top:20px">
+      <div class="section-eyebrow">Tactic Performance</div>
+      <table class="tactic-table">
+        <thead><tr><th>Channel</th><th>Status</th><th>Score</th><th>Trend</th></tr></thead>
+        <tbody id="live-tactic-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- AI Optimization (shown last) -->
+    <div id="live-opt-tips" class="hidden" style="margin-top:28px">
+      <div class="section-eyebrow">AI Optimization Engine</div>
+      <div class="recs-grid" id="live-recs-grid"></div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="/tracking/{{ campaign_id }}" class="btn-neon">📡 Open Real Tracking Dashboard</a>
+      <a href="/campaigns/{{ campaign_id }}" class="act-btn">📁 View Campaign</a>
+      <a href="/dashboard" class="act-btn">⚡ New Campaign</a>
+    </div>
+  </div>
+
+</div><!-- /launch-section -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const CAMPAIGN_ID  = {{ campaign_id }};
+  const EXEC_STATUS  = "{{ data.campaign.execution_status }}";
+</script>
+<script src="/static/js/workspace.js"></script>
+{% endblock %}

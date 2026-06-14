@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Campaigns — SalesAI{% endblock %}
+{% block content %}
+
+<div class="page-hdr">
+  <div>
+    <h1 class="page-title">Campaigns <span class="g-text">Library</span></h1>
+    <p class="page-sub">All campaigns saved to database. Click to view full strategy.</p>
+  </div>
+  <a href="/dashboard" class="btn-neon">⚡ New Campaign</a>
+</div>
+
+{% if not campaigns %}
+<div class="empty-state">
+  <div class="es-icon">📭</div>
+  <h3>No campaigns yet</h3>
+  <p>Generate your first campaign from the dashboard.</p>
+  <a href="/dashboard" class="btn-neon" style="margin-top:16px">Get Started →</a>
+</div>
+
+{% else %}
+<div class="camp-grid">
+  {% for c in campaigns %}
+  <div class="camp-card glass-card">
+    <div class="cc-header">
+      <div>
+        <div class="cc-product">{{ c.product_name }}</div>
+        <div class="cc-meta">{{ c.persona }} · {{ c.behavior }}</div>
+      </div>
+      <span class="cc-cat {{ c.category|lower }}">{{ c.category }}</span>
+    </div>
+    <div class="cc-footer">
+      <span class="cc-time">{{ c.created_at }}</span>
+      <div class="cc-actions">
+        <a href="/campaigns/{{ c.id }}" class="btn-sm">View →</a>
+        <button class="btn-sm btn-del" onclick="deleteCampaign({{ c.id }}, this)">🗑</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+{% block extra_js %}
+<script>
+function deleteCampaign(id, btn) {
+  if (!confirm("Delete this campaign permanently?")) return;
+  fetch(`/api/campaigns/${id}/delete`, {method:"POST"})
+    .then(r => r.json())
+    .then(d => { if (d.success) btn.closest(".camp-card").remove(); });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}History — SalesAI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-row">
+    <div>
+      <h1 class="page-title">History</h1>
+      <p class="page-sub">All previously generated strategies (stored while server is running).</p>
+    </div>
+    {% if entries %}
+    <button class="btn-danger-sm" onclick="clearHistory()">🗑 Clear All</button>
+    {% endif %}
+  </div>
+</div>
+
+{% if not entries %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>No history yet</h3>
+    <p>Generate your first strategy to see it here.</p>
+    <a href="/generate" class="btn-primary">Generate Now →</a>
+  </div>
+{% else %}
+  <div class="history-list">
+    {% for entry in entries %}
+    <div class="history-card" id="hcard-{{ entry.id }}">
+      <!-- Card Header (always visible) -->
+      <div class="history-header" onclick="toggleHistory('{{ entry.id }}')">
+        <div class="history-meta">
+          <span class="history-product">{{ entry.product }}</span>
+          <span class="history-persona-badge persona-{{ entry.persona | replace(' ', '-') | lower }}">
+            {{ entry.persona }}
+          </span>
+        </div>
+        <div class="history-right">
+          <span class="history-time">{{ entry.timestamp }}</span>
+          <span class="history-toggle" id="htoggle-{{ entry.id }}">▶</span>
+        </div>
+      </div>
+
+      <!-- Card Body (collapsed by default) -->
+      <div class="history-body hidden" id="hbody-{{ entry.id }}">
+        <div class="history-body-actions">
+          <a href="/generate?product={{ entry.product | urlencode }}&persona={{ entry.persona | urlencode }}"
+             class="btn-ghost">↻ Regenerate</a>
+          <button class="btn-ghost" onclick="copyHistoryEntry('{{ entry.id }}')">⎘ Copy</button>
+        </div>
+
+        <!-- Mini funnel flow -->
+        <div class="mini-funnel">
+          {% for stage in entry.data.funnel %}
+          <span class="mini-stage stage-{{ stage.stage | lower }}">{{ stage.stage }}</span>
+          {% if not loop.last %}<span class="mini-arrow">→</span>{% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Stage summaries -->
+        {% for stage in entry.data.funnel %}
+        <div class="history-stage">
+          <div class="history-stage-name stage-dot-{{ stage.stage | lower }}">{{ stage.stage }}</div>
+          <div class="history-stage-goal">{{ stage.goal }}</div>
+          <div class="history-stage-msg">"{{ stage.content.sales_message }}"</div>
+        </div>
+        {% endfor %}
+
+        <!-- Tips -->
+        <div class="history-tips">
+          <strong>Quick Tips:</strong>
+          <ul>
+            {% for tip in entry.data.quick_tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleHistory(id) {
+  const body    = document.getElementById("hbody-" + id);
+  const toggle  = document.getElementById("htoggle-" + id);
+  const isOpen  = !body.classList.contains("hidden");
+  body.classList.toggle("hidden", isOpen);
+  toggle.textContent = isOpen ? "▶" : "▼";
+}
+
+function clearHistory() {
+  if (!confirm("Clear all history? This cannot be undone.")) return;
+  fetch("/history/clear", { method: "POST" })
+    .then(() => location.reload());
+}
+
+function copyHistoryEntry(id) {
+  const card  = document.getElementById("hbody-" + id);
+  const text  = card.innerText;
+  navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+}
+</script>
+{% endblock %}

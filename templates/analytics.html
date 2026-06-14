@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Analytics — SalesAI{% endblock %}
+{% block content %}
+
+<div class="page-hdr">
+  <h1 class="page-title">Analytics <span class="g-text">Overview</span></h1>
+  <p class="page-sub">Aggregated performance across all your campaigns.</p>
+</div>
+
+{% if not campaigns %}
+<div class="empty-state">
+  <div class="es-icon">📊</div>
+  <h3>No data yet</h3>
+  <p>Generate your first campaign to see analytics.</p>
+  <a href="/dashboard" class="btn-neon" style="margin-top:16px">Generate Now →</a>
+</div>
+{% else %}
+
+<!-- SUMMARY STATS -->
+<div class="metric-row">
+  <div class="metric-card large">
+    <div class="mc-val">{{ campaigns|length }}</div>
+    <div class="mc-lbl">Total Campaigns</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val">{{ campaigns|selectattr('category','equalto','B2C')|list|length }}</div>
+    <div class="mc-lbl">B2C Campaigns</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val">{{ campaigns|selectattr('category','equalto','B2B')|list|length }}</div>
+    <div class="mc-lbl">B2B Campaigns</div>
+  </div>
+  <div class="metric-card large">
+    <div class="mc-val">5</div>
+    <div class="mc-lbl">Funnel Stages</div>
+  </div>
+</div>
+
+<!-- CAMPAIGN TABLE -->
+<div class="glass-card" style="margin-top:24px">
+  <div class="section-eyebrow">All Campaigns</div>
+  <div class="table-scroll">
+    <table class="compare-tbl">
+      <thead>
+        <tr><th>#</th><th>Product</th><th>Persona</th><th>Behavior</th><th>Category</th><th>Created</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for c in campaigns %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><strong>{{ c.product_name }}</strong></td>
+          <td>{{ c.persona }}</td>
+          <td><span class="beh-tag">{{ c.behavior }}</span></td>
+          <td><span class="cc-cat {{ c.category|lower }}">{{ c.category }}</span></td>
+          <td style="color:var(--muted);font-size:.8rem">{{ c.created_at }}</td>
+          <td><a href="/campaigns/{{ c.id }}" class="btn-sm">View →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PERSONA BREAKDOWN -->
+<div class="glass-card" style="margin-top:24px">
+  <div class="section-eyebrow">Persona Breakdown</div>
+  <div class="persona-breakdown" id="persona-breakdown">
+    {% set persona_counts = {} %}
+    {% for c in campaigns %}
+      {% if c.persona in persona_counts %}
+        {% set _ = persona_counts.update({c.persona: persona_counts[c.persona] + 1}) %}
+      {% else %}
+        {% set _ = persona_counts.update({c.persona: 1}) %}
+      {% endif %}
+    {% endfor %}
+    {% for persona, count in persona_counts.items() %}
+    <div class="pb-row">
+      <span class="pb-name">{{ persona }}</span>
+      <div class="pb-bar-wrap">
+        <div class="pb-bar" style="width:{{ (count / campaigns|length * 100)|round|int }}%"></div>
+      </div>
+      <span class="pb-count">{{ count }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Persona Intelligence — SalesAI{% endblock %}
+{% block content %}
+
+<div class="page-hdr center-hdr">
+  <div class="eyebrow">Persona System</div>
+  <h1 class="page-title">3-Level <span class="g-text">Buyer Intelligence</span></h1>
+  <p class="page-sub">Understanding your audience is the foundation of every winning strategy.</p>
+</div>
+
+<!-- HIERARCHY VISUAL -->
+<div class="hierarchy-visual">
+  <div class="hv-level">
+    <div class="hvl-label">Level 1</div>
+    <div class="hvl-nodes">
+      <div class="hvn hvn-cat">B2C</div>
+      <div class="hvn hvn-cat">B2B</div>
+    </div>
+  </div>
+  <div class="hv-arrow">↓</div>
+  <div class="hv-level">
+    <div class="hvl-label">Level 2</div>
+    <div class="hvl-nodes">
+      {% for cat, cv in hierarchy.items() %}
+        {% for pk in cv.personas.keys() %}
+        <div class="hvn hvn-per">{{ pk }}</div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="hv-arrow">↓</div>
+  <div class="hv-level">
+    <div class="hvl-label">Level 3</div>
+    <div class="hvl-nodes">
+      {% for bk in behaviors.keys() %}
+      <div class="hvn hvn-beh">{{ bk }}</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- PERSONA CARDS -->
+{% for cat_key, cat_val in hierarchy.items() %}
+<div class="persona-category">
+  <div class="pc-header">
+    <span class="pc-icon">{{ cat_val.icon }}</span>
+    <div>
+      <h2 class="pc-title">{{ cat_val.label }}</h2>
+      <p class="pc-desc">{{ cat_val.description }}</p>
+    </div>
+  </div>
+  <div class="persona-cards-grid">
+    {% for p_key, p_val in cat_val.personas.items() %}
+    <div class="persona-detail-card glass-card">
+      <div class="pdc-top">
+        <span class="pdc-icon">{{ p_val.icon }}</span>
+        <div>
+          <div class="pdc-name">{{ p_key }}</div>
+          <div class="pdc-cat">{{ cat_key }}</div>
+        </div>
+        <a href="/dashboard" class="btn-sm">Try →</a>
+      </div>
+      <p class="pdc-desc">{{ p_val.desc }}</p>
+      <div class="pdc-behaviors">
+        <span class="pdc-beh-label">Compatible behaviors:</span>
+        {% for b in p_val.behaviors %}
+        <span class="beh-tag">{{ b }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+
+<!-- BEHAVIOR TYPES -->
+<div class="glass-card" style="margin-top:32px">
+  <div class="section-eyebrow">Behavior Modifiers</div>
+  <h2 class="sec-h2" style="margin-bottom:20px">How behavior shapes every word of your strategy</h2>
+  <div class="beh-explain-grid">
+    {% for bk, bv in behaviors.items() %}
+    <div class="beh-explain-card">
+      <div class="bec-name">{{ bk }}</div>
+      <div class="bec-desc">{{ bv }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="glass-card" style="margin-top:24px">
+  <div class="section-eyebrow">Quick Reference</div>
+  <div class="table-scroll">
+    <table class="compare-tbl">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>🎓 Student</th>
+          <th>💼 Professional</th>
+          <th>🚀 Startup Founder</th>
+          <th>🏦 Enterprise Mgr</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Decision speed</td><td>Medium</td><td>Fast</td><td>Fast</td><td>Slow</td></tr>
+        <tr><td>Price sensitivity</td><td>Very High</td><td>Medium</td><td>High</td><td>Low</td></tr>
+        <tr><td>Best channel</td><td>Instagram, YouTube</td><td>LinkedIn, Email</td><td>Twitter, Email</td><td>LinkedIn, Webinar</td></tr>
+        <tr><td>Key trigger</td><td>Peer success</td><td>Time savings</td><td>Growth ROI</td><td>Risk reduction</td></tr>
+        <tr><td>Content style</td><td>Friendly, casual</td><td>Clean, efficient</td><td>Bold, data-backed</td><td>Formal, detailed</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

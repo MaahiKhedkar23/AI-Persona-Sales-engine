@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ data.campaign.product_name }} — SalesAI{% endblock %}
+{% block content %}
+
+{% set c = data.campaign %}
+{% set an = data.analytics %}
+
+<div class="page-hdr">
+  <div>
+    <div class="breadcrumb"><a href="/campaigns">Campaigns</a> / {{ c.product_name }}</div>
+    <h1 class="page-title">{{ c.product_name }}</h1>
+    <p class="page-sub">{{ c.persona }} · {{ c.behavior }} · <span class="cc-cat {{ c.category|lower }}">{{ c.category }}</span></p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span class="ts-label" style="color:var(--muted)">{{ c.created_at }}</span>
+    <a href="/dashboard" class="btn-neon">⚡ New Campaign</a>
+  </div>
+</div>
+
+<!-- ANALYTICS ROW -->
+{% if an %}
+<div class="metric-row">
+  <div class="metric-card large"><div class="mc-val">{{ "{:,}".format(an.reach) }}</div><div class="mc-lbl">Est. Reach</div></div>
+  <div class="metric-card large"><div class="mc-val">{{ an.engagement }}%</div><div class="mc-lbl">Engagement</div></div>
+  <div class="metric-card large"><div class="mc-val">{{ "{:,}".format(an.clicks) }}</div><div class="mc-lbl">Clicks</div></div>
+  <div class="metric-card large"><div class="mc-val">{{ an.conversion_score }}</div><div class="mc-lbl">Conv. Score</div></div>
+</div>
+{% endif %}
+
+<!-- FUNNEL STAGES -->
+<div class="funnel-section">
+  <div class="section-eyebrow">Sales Funnel — 5 Stages</div>
+
+  <!-- Static flow bar -->
+  <div class="funnel-flow-static">
+    {% set stage_colors = {'Awareness':'#6c63ff','Interest':'#3ecf8e','Consideration':'#f0c040','Conversion':'#ff6b6b','Retention':'#4f8ef7'} %}
+    {% for stage in data.funnel %}
+    <div class="ffs-node" onclick="toggleDetailStage({{ loop.index0 }})">
+      <div class="ffs-box" style="background:{{ stage_colors.get(stage.stage, '#888') }}">{{ stage.stage }}</div>
+      <div class="ffs-goal">{{ stage.goal[:50] }}…</div>
+    </div>
+    {% if not loop.last %}<div class="ffs-arrow">→</div>{% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Stage detail panels -->
+  {% for stage in data.funnel %}
+  <div class="stage-full-card glass-card" id="sfc-{{ loop.index0 }}" style="display:none;animation:fadeUp .3s ease">
+    <div class="sfc-header" style="border-left:4px solid {{ stage_colors.get(stage.stage,'#888') }}">
+      <h3 class="sfc-title">{{ stage.stage }}</h3>
+      <div class="sfc-goal">{{ stage.goal }}</div>
+    </div>
+    {% if stage.insight %}
+    <div class="sfc-insight">💡 <em>{{ stage.insight }}</em></div>
+    {% endif %}
+
+    <!-- Tactics with implementation -->
+    <div class="sfc-section-label">Tactics & Implementation</div>
+    {% for tac in stage.tactics %}
+    <div class="tac-block">
+      <div class="tac-name">{{ tac.name if tac is mapping else tac }}</div>
+      {% if tac is mapping %}
+      <div class="tac-desc">{{ tac.description }}</div>
+      <ul class="tac-impl">
+        {% for step in tac.implementation %}<li>{{ step }}</li>{% endfor %}
+      </ul>
+      <div class="tac-meta">
+        {% if tac.timing %}<span class="tac-meta-item">⏰ {{ tac.timing }}</span>{% endif %}
+        {% if tac.platform %}<span class="tac-meta-item">📍 {{ tac.platform }}</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- Content -->
+    <div class="sfc-section-label">Generated Content</div>
+    <div class="content-tabs">
+      <button class="ctab active" onclick="switchTab(event,'ct-{{ loop.index0 }}','msg')">Sales Message</button>
+      <button class="ctab" onclick="switchTab(event,'ct-{{ loop.index0 }}','email')">Email</button>
+      <button class="ctab" onclick="switchTab(event,'ct-{{ loop.index0 }}','mktg')">Ad Copy</button>
+    </div>
+    <div id="ct-{{ loop.index0 }}-msg" class="ctab-panel active">
+      <div class="content-box">{{ stage.content.sales_message if stage.content.sales_message else '—' }}</div>
+    </div>
+    <div id="ct-{{ loop.index0 }}-email" class="ctab-panel">
+      <div class="content-box">
+        {% if stage.content.email %}<div class="email-subj">Subject: {{ stage.content.email.subject }}</div>{{ stage.content.email.body }}{% else %}—{% endif %}
+      </div>
+    </div>
+    <div id="ct-{{ loop.index0 }}-mktg" class="ctab-panel">
+      <div class="content-box">{{ stage.content.marketing_text if stage.content.marketing_text else '—' }}</div>
+    </div>
+
+    <!-- KPIs -->
+    {% if stage.kpis %}
+    <div class="sfc-section-label">KPIs to Track</div>
+    <div class="kpi-row">
+      {% for kpi in stage.kpis %}<span class="kpi-chip">📈 {{ kpi }}</span>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- AI RECOMMENDATIONS -->
+{% if data.optimization_tips %}
+<div class="recs-section">
+  <div class="section-eyebrow">AI Optimization Engine</div>
+  <div class="recs-grid">
+    {% for tip in data.optimization_tips %}
+    <div class="rec-card glass-card priority-{{ tip.priority }}">
+      <div class="rc-icon">{{ tip.icon }}</div>
+      <div class="rc-body">
+        <div class="rc-title">{{ tip.title }}</div>
+        <div class="rc-text">{{ tip.text }}</div>
+      </div>
+      <span class="rc-pri pri-{{ tip.priority }}">{{ tip.priority }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- TACTIC TABLE -->
+{% if an and an.tactic_data %}
+<div class="glass-card" style="margin-top:24px">
+  <div class="section-eyebrow">Tactic Performance</div>
+  <table class="tactic-table">
+    <thead><tr><th>Channel</th><th>Status</th><th>Score</th><th>Trend</th></tr></thead>
+    <tbody>
+      {% for t in an.tactic_data %}
+      <tr>
+        <td>{{ t.tactic }}</td>
+        <td><span class="status-{{ t.status|lower }}">{{ t.status }}</span></td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar" style="width:{{ t.score }}%;background:{{ '#3ecf8e' if t.score>=75 else '#f0c040' if t.score>=50 else '#ff6b6b' }}"></div>
+            <span class="score-num">{{ t.score }}%</span>
+          </div>
+        </td>
+        <td class="trend-{{ 'up' if t.trend=='↑' else 'down' if t.trend=='↓' else 'flat' }}">{{ t.trend }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let openIdx = null;
+function toggleDetailStage(i) {
+  if (openIdx === i) {
+    document.getElementById("sfc-"+i).style.display = "none";
+    openIdx = null; return;
+  }
+  if (openIdx !== null) document.getElementById("sfc-"+openIdx).style.display = "none";
+  document.getElementById("sfc-"+i).style.display = "block";
+  document.getElementById("sfc-"+i).scrollIntoView({behavior:"smooth",block:"nearest"});
+  openIdx = i;
+}
+function switchTab(e, prefix, tab) {
+  const wrap = e.target.closest(".stage-full-card") || e.target.closest(".glass-card");
+  wrap.querySelectorAll(".ctab").forEach(b=>b.classList.remove("active"));
+  wrap.querySelectorAll(".ctab-panel").forEach(p=>p.classList.remove("active"));
+  e.target.classList.add("active");
+  document.getElementById(prefix+"-"+tab).classList.add("active");
+}
+</script>
+{% endblock %}

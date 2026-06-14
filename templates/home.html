@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}SalesAI — AI Campaign Intelligence Platform{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-badge"><span class="live-dot"></span>Your Personal Live AI Engine</div>
+  <h1 class="hero-h1">The AI That <span class="g-text">Builds, Tracks</span><br>& Optimizes Your Sales</h1>
+  <p class="hero-p">3-level persona targeting. Full 5-stage funnel. Implementation guides, analytics dashboard, and AI optimization — all in one platform.</p>
+  <div class="hero-btns">
+    <a href="/dashboard" class="btn-neon">⚡ Launch Campaign</a>
+    <a href="/personas"  class="btn-outline-lg">Explore Personas →</a>
+  </div>
+  <div class="hero-metrics">
+    <div class="hm-card"><div class="hm-num">5</div><div class="hm-lbl">Funnel Stages</div></div>
+    <div class="hm-card"><div class="hm-num">8</div><div class="hm-lbl">Persona Types</div></div>
+    <div class="hm-card"><div class="hm-num">5</div><div class="hm-lbl">Behavior Modes</div></div>
+    <div class="hm-card"><div class="hm-num">∞</div><div class="hm-lbl">Campaigns</div></div>
+  </div>
+</section>
+
+<!-- PLATFORM FEATURES -->
+<section class="home-sec">
+  <div class="eyebrow">Platform Features</div>
+  <h2 class="sec-h2">Everything a sales team needs — powered by AI</h2>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="fc-icon">🧠</div>
+      <h3>3-Level Persona System</h3>
+      <p>Category → Persona → Behavior. The most granular audience targeting outside a CRM.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fc-icon">🗺️</div>
+      <h3>Interactive Funnel Flow</h3>
+      <p>5-stage AICR funnel with clickable stages, tactics, KPIs, and content.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fc-icon">🛠️</div>
+      <h3>Implementation Guides</h3>
+      <p>Step-by-step execution instructions for every tactic the AI recommends.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fc-icon">📊</div>
+      <h3>Campaign Analytics</h3>
+      <p>Reach, engagement, click tracking and tactic performance dashboards.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fc-icon">🤖</div>
+      <h3>AI Optimization Engine</h3>
+      <p>Real-time recommendations to improve campaign performance.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fc-icon">🗄️</div>
+      <h3>Persistent Storage</h3>
+      <p>All campaigns saved to SQLite. Full history, re-access, compare, delete.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RECENT CAMPAIGNS -->
+{% if campaigns %}
+<section class="home-sec">
+  <div class="eyebrow">Recent Activity</div>
+  <h2 class="sec-h2">Latest campaigns · <a href="/campaigns" class="link-accent">View all {{ total }} →</a></h2>
+  <div class="recent-campaigns">
+    {% for c in campaigns %}
+    <a href="/campaigns/{{ c.id }}" class="rc-card">
+      <div class="rc-top">
+        <span class="rc-product">{{ c.product_name }}</span>
+        <span class="rc-cat-badge {{ c.category|lower }}">{{ c.category }}</span>
+      </div>
+      <div class="rc-meta">{{ c.persona }} · <span class="rc-beh">{{ c.behavior }}</span></div>
+      <div class="rc-time">{{ c.created_at }}</div>
+      <div class="rc-arrow">→</div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<section class="home-sec center-sec">
+  <div class="empty-hero">
+    <div class="eh-icon">🚀</div>
+    <h3>No campaigns yet</h3>
+    <p>Create your first AI campaign in seconds</p>
+    <a href="/dashboard" class="btn-neon">Start Now →</a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

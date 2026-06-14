@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{% block title %}SalesAI Platform{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/auth.css"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- AMBIENT BACKGROUND -->
+<div class="ambient" aria-hidden="true">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a href="/" class="nav-brand">
+    <div class="brand-icon"><span>⚡</span></div>
+    <span class="brand-name">Sales<em>AI</em></span>
+  </a>
+
+  <ul class="nav-menu" id="nav-menu">
+    <li><a href="/"          class="nm-link {% if request.path=='/' %}active{% endif %}">Home</a></li>
+    <li><a href="/dashboard" class="nm-link {% if request.path=='/dashboard' %}active{% endif %}">Dashboard</a></li>
+    <li><a href="/campaigns" class="nm-link {% if request.path=='/campaigns' %}active{% endif %}">Campaigns</a></li>
+    <li><a href="/analytics" class="nm-link {% if request.path=='/analytics' %}active{% endif %}">Analytics</a></li>
+    <li><a href="/personas"  class="nm-link {% if request.path=='/personas' %}active{% endif %}">Personas</a></li>
+    <li><a href="/about"     class="nm-link {% if request.path=='/about' %}active{% endif %}">About</a></li>
+    {% if request.path.startswith('/tracking') %}
+    <li><a href="{{ request.path }}" class="nm-link active" style="color:var(--green)">📡 Live Tracking</a></li>
+    {% endif %}
+  </ul>
+
+  <div class="nav-end">
+    <a href="/dashboard" class="nav-cta-btn">⚡ New Campaign</a>
+    {% if session.user_id %}
+    <div class="user-menu">
+      <div class="um-trigger" onclick="this.parentElement.classList.toggle('open')">
+        <div class="um-avatar">{{ session.username[0]|upper }}</div>
+        <span class="um-name">{{ session.username }}</span>
+        <span class="um-caret">▾</span>
+      </div>
+      <div class="um-dropdown">
+        <div class="umd-header">
+          <div class="umd-avatar">{{ session.username[0]|upper }}</div>
+          <div>
+            <div class="umd-name">{{ session.username }}</div>
+            <div class="umd-label">Logged in</div>
+          </div>
+        </div>
+        <a href="/campaigns" class="umd-item">📁 My Campaigns</a>
+        <a href="/analytics"  class="umd-item">📊 Analytics</a>
+        <div class="umd-divider"></div>
+        <a href="/logout"     class="umd-item umd-logout">⎋ Sign Out</a>
+      </div>
+    </div>
+    {% else %}
+    <a href="/login" class="nav-login-btn">Sign In</a>
+    {% endif %}
+    <button class="burger" id="burger" aria-label="Menu"
+            onclick="document.getElementById('nav-menu').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main-wrap">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>⚡ SalesAI Platform</span>
+  <span></span>
+  <span>2026</span>
+</footer>
+
+<script src="/static/js/main.js"></script>
+{% block extra_js %}{% endblock %}
+<script>
+// Close user menu when clicking outside
+document.addEventListener("click", function(e) {
+  const menu = document.querySelector(".user-menu");
+  if (menu && !menu.contains(e.target)) menu.classList.remove("open");
+});
+</script>
+</body>
+</html>
